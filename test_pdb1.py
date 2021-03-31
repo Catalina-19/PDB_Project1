@@ -1,5 +1,8 @@
 # import re
 import requests
+import time
+import argparse
+
 
 base_url = "https://www.ebi.ac.uk/pdbe/"
 api_base = base_url + "api/"
@@ -10,11 +13,25 @@ def make_request(url, mode, pdb_id):
     if mode == "get":
         response = requests.get(url=url + pdb_id)
 
+
     if response.status_code == 200:
         return response.json()
     else:
         print("[No data retrieved - %s] %s" % (response.status_code, response.text))
     return None
+    # This should be changed to account for the cases that the server is busy or there is problem to
+    # establish connection. something like:
+    """
+    for _ in range(10):
+        response = requests.get(url=url + pdb_id)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            time.sleep(5)
+    
+    # If after 10 loop didn't get anything
+    return None
+    """
 
 
 def get_secondary_structure_ranges(pdb_id=None, pdb_list=None):
@@ -61,9 +78,30 @@ def get_secondary_structure_ranges(pdb_id=None, pdb_list=None):
                 print(report)
     return None
 
+# Add this line so you can use your code both as a module (to be imported to other codes) and as a
+# stand alone program. If you call the code as a program (python PDB_project1) the code after if __name__ ...
+# will be executed. if you import with out if __name__ ... line, the code will be executed at once.
+if __name__ == "__main__":
+    # do not hard code file names, parameters etc. Use argparse (I imported for you) to read the parameters from
+    # commad line. Read more about argparse it is a good one
+    """
+    A example from my stuff
+    parser = argparse.ArgumentParser(description='Active Site Design')
+    parser.add_argument('conf', type=str, help='Configuration file.')
+    parser.add_argument('-debug', action='store_true', help='Debug mode.')
 
-f = open("5pdb.txt", "rt")
-for line in f:
-    get_secondary_structure_ranges(pdb_id=line)
+    args = parser.parse_args()
+    """
 
-f.close()
+    # use with cluase. It is recommended and takes care of closing the file
+    with open("5pdb.txt", "rt") as f:
+        # trim the line. Dont trust the input given by the user
+        for line in f:
+            line = line.split()
+            # if the id is the first field (it should be 0)
+            pdb_id = line[0]
+            get_secondary_structure_ranges(pdb_id=pdb_id)
+
+    """
+    Also your code is suppose to get the pdb files not the secondary structure annotation.
+    """
