@@ -33,10 +33,7 @@ for file in os.listdir('.'):
             for chain in hv:
                 residues = list(chain)
                 count = 0
-                # This is wrong, it jumps over three residues at a time (1,2,3)->(4,5,6).
-                # What we wnat is (1,2,3)->(2,3,4)->(3,4,5) ...
-                # for i in range(len(chain)-3):
-                for _ in range(len(chain) // 3):
+                for _ in range(len(chain)-3):
                     for i, residue in enumerate(residues[count:count + 1]):
                         if residue.getResname() != "HOH" and residue.getResname() != "HEM" and residue.getResname() != "CD" and residue.getResname() != "ACT" and residues[count + 3].getResname() != "HOH":
                             try:
@@ -44,4 +41,4 @@ for file in os.listdir('.'):
                                 print("%s: Distance between C-alpha of residues %s and %s is %.2f" % (chain, residues[count], residues[count + 2],calcDistance(residues[count].getAtom("CA"), residues[count + 2].getAtom("CA"))))
                             except:
                                 continue
-                    count += 3
+                    count += 1
