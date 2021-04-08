@@ -1,0 +1,17 @@
+reff/**
+**__pycache__/**
+*__pycache__*
+*idea/**
+*backup
+*best*
+*output*
+*.out
+Fragments.py
+*test.py
+*.err
+*.out
+*.log
+thirdparty/**
+*.pyc
+codetests/**
+results
