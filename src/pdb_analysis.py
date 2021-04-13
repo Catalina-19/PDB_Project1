@@ -16,7 +16,13 @@ class Analysis(object):
         """
         pass
 
-    def detect_three_residue_tight_loop_serial(self, pdb_list: list, cutoff: float = 3.5):
+    def read_input(self, input):
+        pdb_names = list()
+        with open(input, 'r'):
+            pass
+        return pdb_names
+
+    def detect_three_residue_tight_loop_serial(self, pdb_list: str, cutoff: float = 4.0):
         """
         Detects tight three residue-turns with the defined distance cutoff and print
         the pdb name, res-i, res-j, res-k, distance, phi-i, phi-j, phi-k,
@@ -25,9 +31,16 @@ class Analysis(object):
         :param cutoff:
         :return: None
         """
-        pass
+        # TODO
+        # 1 Read the input file with pdb names into a list
+        pdb_names = self.read_input(pdb_list)
+        # 2 Read pdbs one by one
+        for pdb_name in pdb_names:
+           struct = self.read_pdb(pdb_name)
 
-    def detect_three_residue_tight_loop_MPI(self, pdb_list: list, cutoff: float = 3.5):
+        # 3 Compute distance and phi - psi
+
+    def detect_three_residue_tight_loop_MPI(self, pdb_list: list, cutoff: float = 4.0):
         """
         Detects tight three residue-turns with the defined distance cutoff and print
         the pdb name, res-i, res-j, res-k, distance, phi-i, phi-j, phik,
@@ -40,4 +53,6 @@ class Analysis(object):
         pass
 
 if __name__ == "__main__":
-    pass
+    pdb_list = "input_file"
+    analysis = Analysis()
+    analysis.detect_three_residue_tight_loop_serial(pdb_list)
