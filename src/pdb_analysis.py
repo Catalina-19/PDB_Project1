@@ -8,13 +8,13 @@ class Analysis(object):
         """
         pass
 
-    def read_pdb(self, file_object):
+    def read_pdb(self, pdb_name):
         """
         Reads a PDB file and returns a structure object
-        :param file_object:
+        :param pdb_name:
         :return: structure
         """
-        structure = parsePDB(file_object)
+        structure = parsePDB(pdb_name)
         return structure
 
     def read_input(self, input):
@@ -89,7 +89,26 @@ class Analysis(object):
         :param pdb_list:
         :param cutoff:
         """
-        pass
+        # (1)
+        #   On Master process (rank 0)
+        #       reads input file and get the pdb list
+        #       divide the pdb list into a list of sub list
+        #       send the sub lists to each clients (rank > 0). Keep the fist element to be processed by master process
+        #   On Client processes (rank > 0)
+        #       receive the sub list
+
+        # (2)
+        #   On all process
+        #       Read pdb File
+        #       Compute the metrics, save them in a variable
+
+        # (3)
+        #   On Master process
+        #       Receive the metrics from other process
+        #       Print them out
+        #   On Clients
+        #       Sent the metrics to the master node
+
 
 if __name__ == "__main__":
     pdb_list = "5pdb.txt"
