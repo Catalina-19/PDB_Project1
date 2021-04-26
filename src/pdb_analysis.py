@@ -7,7 +7,9 @@ class Analysis(object):
         """
         A class to perform structural analysis
         """
-        pass
+        self.comm = MPI.COMM_WORLD
+        self.rank = self.comm.Get_rank()
+        self.size = self.comm.Get_size()
 
     def read_pdb(self, pdb_name):
         """
@@ -36,6 +38,7 @@ class Analysis(object):
         :return: None
         """
         # TODO
+        result = list()
         # 1 Read the input file with pdb names into a list
         # pdb_names = self.read_input(pdb_list)
         # 2 Read pdbs one by one
@@ -54,18 +57,26 @@ class Analysis(object):
                 res_k = residues[index + 2]
                 # Check that all residues are one of the standard residues
                 # Compute distance between atom C of res_i and atom N of res_k
+                # resi: C - resk N
+                # resi: CA - resk CA
+                # resi: N - resk C
                 if res_i in standard_aa and res_j in standard_aa and res_k in standard_aa:
-                    distance_CA_N = calcDistance(residues[index].getAtom("CA"), residues[index + 2].getAtom("N"))
+                    distance_CA_N = calcDistance(residues[index].getAtom("C"), residues[index + 2].getAtom("N"))
                     # If distance < cutoff=4.0
                     # Compute Phi and psi
                     if distance_CA_N < cutoff:
-                        # I have changed it so it does not print anything unless wanted.
-                        Phi_i = calcPhi(residues[index])
-                        Phi_j = calcPhi(residues[index + 1])
-                        Phi_k = calcPhi(residues[index + 2])
-                        Psi_i = calcPsi(residues[index])
-                        Psi_j = calcPsi(residues[index + 1])
-                        Psi_k = calcPsi(residues[index + 2])
+                        try:
+                            # I have changed it so it does not print anything unless wanted.
+                            Phi_i = calcPhi(residues[index])
+                            Phi_j = calcPhi(residues[index + 1])
+                            Phi_k = calcPhi(residues[index + 2])
+                            Psi_i = calcPsi(residues[index])
+                            Psi_j = calcPsi(residues[index + 1])
+                            Psi_k = calcPsi(residues[index + 2])
+                            result.append('{:5s}   {:8s}   {:8s}   {:8s}   {:8s}   {:10.3f}   {:10.3f}   {:10.3f}   {:10.3f}   {:10.3f}   {:10.3f}   {:10.3f}'.format(pdb_id, str(chain), str(res_i), str(res_j), str(res_k), distance_CA_N, Phi_i, Phi_j, Phi_k, Psi_i, Psi_j, Psi_k))
+                        except Exception:
+                            continue
+
                     # If wanted to print nicely
                     # if distance_CA_N < cutoff:
                     #     print(f"{pdb_id:>4}", f"{str(chain):>5}", f"{str(res_i):>5}", f"{str(res_j):>5}",
@@ -88,6 +99,7 @@ class Analysis(object):
 
                 else:
                     continue
+        return result
 
     def detect_three_residue_tight_loop_MPI(self, pdb_list: list, cutoff: float = 4.0):
         """
@@ -99,33 +111,48 @@ class Analysis(object):
         :param pdb_list:
         :param cutoff:
         """
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
-        size = comm.Get_size()
 
         # (1)
         #   On Master process (rank 0)
         #       reads input file and get the pdb list
         #       divide the pdb list into a list of sub list
         #       send the sub lists to each clients (rank > 0). Keep the fist element to be processed by master process
-        if rank == 0:
+        print('start on: ', self.rank)
+        if self.rank == 0:
             data = self.read_input(pdb_list)
-            sub_lists = [data[x:x + len(data) // size] for x in range(0, len(data), len(data) // size)]
-            for i in range(len(data) // size):
-                comm.send(sub_lists[i + 1], dest=i + 1)
+            #sub_lists = [data[x:x + len(data) // self.size] for x in range(0, len(data), len(data) // self.size)]
+            sub_lists = list()
+            ave, rem = divmod(len(data), self.size)
+            start, end = 0, 0
+            for i in range(self.size):
+                start = end
+                if i < rem:
+                    end = start + ave + 1
+                else:
+                    end = start + ave
+                sub_lists.append(data[start:end])
+
+
+            print('Rank', self.rank, 'Starting sending', data)
+            print('Rank', self.rank, 'Starting sending', sub_lists)
+
+            for i in range(1, self.size):
+                self.comm.send(sub_lists[i], dest=i)
             data = sub_lists[0]
+            print('Rank', self.rank, 'finished sending')
+
             #   On Client processes (rank > 0)
             #       receive the sub list
-        if rank > 0:
-            data = comm.recv(source=0)
+        if self.rank > 0:
+            print('Rank', self.rank, 'Starting reciveing')
+            data = self.comm.recv(source=0)
+            print('Rank', self.rank, 'Finished reciveing')
 
         # (2)
         #   On all process
         #       Read pdb File
         #       Compute the metrics, save them in a variable
-
         metrics = self.detect_three_residue_tight_loop_serial(data)
-
     # (3)
         #   On Master process
         #       Receive the metrics from other process
@@ -138,17 +165,22 @@ class Analysis(object):
         # I have also tried to define a function to finish communication, but it did not result either
         # def finish_comm():
 
-        if rank == 0:
-            all_data = data
-            for i in range(1, size):
-                all_data += comm.recv(source=i)
-            print(all_data)
+        if self.rank == 0:
+            results = list()
+            results.extend(metrics)
+            #print(metrics)
+            #print(results)
+            for i in range(1, self.size):
+                results.extend(self.comm.recv(source=i))
 
-        if rank > 0:
-            comm.send(metrics, dest=0)
+        if self.rank > 0:
+            self.comm.send(metrics, dest=0)
+
 
         # finish_comm()
-
+        if self.rank == 0:
+            for i in results:
+                print(i)
 
 
 if __name__ == "__main__":
