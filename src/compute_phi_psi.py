@@ -1,7 +1,12 @@
-""" From the PDB ids of a text file, for each PDB, compute Phi and Psi angles of three residues when the distance between the C, CA and N atoms of the first and third residues is lower than a cutoff"""
+""" From the PDB ids of a text file, for each PDB, compute Phi and Psi angles of three residues when the distance
+between the C, CA and N atoms of the first and third residues is lower than a cutoff """
 
 from prody import *
 from mpi4py import MPI
+
+
+# Disable ProDy output
+confProDy(verbosity='info')
 
 
 class Analysis(object):
@@ -115,7 +120,6 @@ class Analysis(object):
         #       reads input file and get the pdb list
         #       divide the pdb list into a list of sub list
         #       send the sub lists to each clients (rank > 0). Keep the fist element to be processed by master process
-        print('start on: ', self.rank)
         if self.rank == 0:
             data = self.read_input(pdb_list)
             sub_lists = list()
@@ -129,20 +133,14 @@ class Analysis(object):
                     end = start + ave
                 sub_lists.append(data[start:end])
 
-            print('Rank', self.rank, 'Starting sending', data)
-            print('Rank', self.rank, 'Starting sending', sub_lists)
-
             for i in range(1, self.size):
                 self.comm.send(sub_lists[i], dest=i)
             data = sub_lists[0]
-            print('Rank', self.rank, 'finished sending')
 
             #   On Client processes (rank > 0)
             #       receive the sub list
         if self.rank > 0:
-            print('Rank', self.rank, 'Starting reciveing')
             data = self.comm.recv(source=0)
-            print('Rank', self.rank, 'Finished receiving')
 
         # (2)
         #   On all process
