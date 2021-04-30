@@ -3,6 +3,7 @@ between the C, CA and N atoms of the first and third residues is lower than a cu
 
 from prody import *
 from mpi4py import MPI
+import re
 
 
 # Disable ProDy output
@@ -37,7 +38,12 @@ class Analysis(object):
         with open(input, 'r') as f:
             for line in f:
                 line = line.split()
-                pdb_names.append(line[0])
+                pdb_searcher = re.compile(r'^[0-9][a-zA-Z0-9]{3}')
+                pdb_id = line[0]
+                if pdb_searcher.match(pdb_id):
+                    pdb_names.append(pdb_id)
+                else:
+                    continue
         return pdb_names
 
     def detect_three_residue_tight_loop_serial(self, pdb_list: str, cutoff_1: float = 4.0, cutoff_2: float = 5.0,
@@ -176,7 +182,7 @@ class Analysis(object):
 
 
 if __name__ == "__main__":
-    pdb_list = "5pdb.txt"
+    pdb_list = "cullpdb_pc50_res2.0_R0.25_d2021_03_25_chains17980.gz"
     analysis = Analysis()
     # analysis.detect_three_residue_tight_loop_serial(pdb_list)
     analysis.detect_three_residue_tight_loop_MPI(pdb_list)

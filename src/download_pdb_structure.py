@@ -1,5 +1,5 @@
-# import re
 # import argparse
+import re
 import requests
 import time
 from Bio.PDB import *
@@ -35,5 +35,9 @@ if __name__ == "__main__":
     with open("5pdb.txt", "rt") as f:
         for line in f:
             line = line.split()
+            pdb_searcher = re.compile(r'^[0-9][a-zA-Z0-9]{3}')
             pdb_id=line[0]
-            get_pdb(pdb_id=pdb_id)
+            if pdb_searcher.match(pdb_id):
+                get_pdb(pdb_id=pdb_id)
+            else:
+                continue
