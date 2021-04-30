@@ -97,7 +97,7 @@ class Analysis(object):
                             Psi_j = calcPsi(residues[index + 1])
                             Psi_k = calcPsi(residues[index + 2])
                             result.append(
-                                '{:^5s}   {:^8s}   {:^9s}   {:^9s}   {:^9s}   {:^12.3f}   {:^14.3f}   {:^11.3f}   {:^13.3f}   {:^10.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f}'.format(
+                                '{:^5s}   {:^8s}   {:^9s}   {:^9s}   {:^9s}   {:^12.3f}   {:^14.3f}   {:^11.3f}   {:^13.3f}   {:^10.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f} \n'.format(
                                     pdb_id, str(chain), str(res_i), str(res_j), str(res_k), distance_C_N,
                                     distance_CA_CA, distance_N_C, Phi_i, Phi_j,
                                     Phi_k, Psi_i, Psi_j, Psi_k))
@@ -143,6 +143,7 @@ class Analysis(object):
                 self.comm.send(sub_lists[i], dest=i)
             data = sub_lists[0]
 
+
             #   On Client processes (rank > 0)
             #       receive the sub list
         if self.rank > 0:
@@ -171,14 +172,16 @@ class Analysis(object):
 
         # Print results
         if self.rank == 0:
-            print(
+            with open("output.txt", 'w') as f:
+                f.write(
                 '{:^5}   {:^8}   {:^9}   {:^9}   {:^9}   {:^13}  {:^13}   {:^12}   {:^8}   {:^8}   {:^8}   {:^8}   {:^8}   {:^8}'.format(
                     "PDB", "Chain", "Residue i", "Residue j", "Residue k", "Distance_C_N", "Distance_CA_CA",
                     "Distance_N_C", "Angle_Phi_i", "Angle_Phi_j", "Angle_Phi_k", "Angle_Psi_i", "Angle_Psi_j",
-                    "Angle_Psi_k",
+                    "Angle_Psi_k \n",
                 ))
             for i in results:
-                print(i)
+                with open("output.txt", 'a') as f:
+                    f.write(i)
 
 
 if __name__ == "__main__":
