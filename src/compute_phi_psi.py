@@ -67,44 +67,44 @@ class Analysis(object):
         for pdb_id in pdb_list:
             struct = self.read_pdb(pdb_id)
 
-        # 3 Compute distance and phi - psi
-        hv = struct.getHierView()
-        standard_aa = struct.protein.stdaa
-        for chain in hv:
-            # Get all residues listed into a variable
-            residues = list(chain)
-            for index in range(len(residues) - 3):
-                res_i = residues[index]
-                res_j = residues[index + 1]
-                res_k = residues[index + 2]
-                # Check that all residues are one of the standard residues
-                # Compute distance between atom C of res_i and atom N of res_k
-                # resi: C - resk N
-                # resi: CA - resk CA
-                # resi: N - resk C
-                if res_i in standard_aa and res_j in standard_aa and res_k in standard_aa:
-                    distance_C_N = calcDistance(residues[index].getAtom("C"), residues[index + 2].getAtom("N"))
-                    distance_CA_CA = calcDistance(residues[index].getAtom("CA"), residues[index + 2].getAtom("CA"))
-                    distance_N_C = calcDistance(residues[index].getAtom("N"), residues[index + 2].getAtom("C"))
-                    # If distance < cutoff=4.0
-                    # Compute Phi and psi
-                    if distance_C_N < cutoff_1 and distance_CA_CA < cutoff_2 and distance_N_C < cutoff_3:
-                        try:
-                            Phi_i = calcPhi(residues[index])
-                            Phi_j = calcPhi(residues[index + 1])
-                            Phi_k = calcPhi(residues[index + 2])
-                            Psi_i = calcPsi(residues[index])
-                            Psi_j = calcPsi(residues[index + 1])
-                            Psi_k = calcPsi(residues[index + 2])
-                            result.append(
-                                '{:^5s}   {:^8s}   {:^9s}   {:^9s}   {:^9s}   {:^12.3f}   {:^14.3f}   {:^11.3f}   {:^13.3f}   {:^10.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f} \n'.format(
-                                    pdb_id, str(chain), str(res_i), str(res_j), str(res_k), distance_C_N,
-                                    distance_CA_CA, distance_N_C, Phi_i, Phi_j,
-                                    Phi_k, Psi_i, Psi_j, Psi_k))
-                        except Exception:
-                            continue
-                else:
-                    continue
+            # 3 Compute distance and phi - psi
+            hv = struct.getHierView()
+            standard_aa = struct.protein.stdaa
+            for chain in hv:
+                # Get all residues listed into a variable
+                residues = list(chain)
+                for index in range(len(residues) - 3):
+                    res_i = residues[index]
+                    res_j = residues[index + 1]
+                    res_k = residues[index + 2]
+                    # Check that all residues are one of the standard residues
+                    # Compute distance between atom C of res_i and atom N of res_k
+                    # resi: C - resk N
+                    # resi: CA - resk CA
+                    # resi: N - resk C
+                    if res_i in standard_aa and res_j in standard_aa and res_k in standard_aa:
+                        distance_C_N = calcDistance(residues[index].getAtom("C"), residues[index + 2].getAtom("N"))
+                        distance_CA_CA = calcDistance(residues[index].getAtom("CA"), residues[index + 2].getAtom("CA"))
+                        distance_N_C = calcDistance(residues[index].getAtom("N"), residues[index + 2].getAtom("C"))
+                        # If distance < cutoff=4.0
+                        # Compute Phi and psi
+                        if distance_C_N < cutoff_1 and distance_CA_CA < cutoff_2 and distance_N_C < cutoff_3:
+                            try:
+                                Phi_i = calcPhi(residues[index])
+                                Phi_j = calcPhi(residues[index + 1])
+                                Phi_k = calcPhi(residues[index + 2])
+                                Psi_i = calcPsi(residues[index])
+                                Psi_j = calcPsi(residues[index + 1])
+                                Psi_k = calcPsi(residues[index + 2])
+                                result.append(
+                                    '{:^5s}   {:^8s}   {:^9s}   {:^9s}   {:^9s}   {:^12.3f}   {:^14.3f}   {:^11.3f}   {:^13.3f}   {:^10.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f}   {:^11.3f} \n'.format(
+                                        pdb_id, str(chain), str(res_i), str(res_j), str(res_k), distance_C_N,
+                                        distance_CA_CA, distance_N_C, Phi_i, Phi_j,
+                                        Phi_k, Psi_i, Psi_j, Psi_k))
+                            except Exception:
+                                continue
+                    else:
+                        continue
         return result
 
     def detect_three_residue_tight_loop_MPI(self, pdb_list: list, cutoff_1: float = 4.0, cutoff_2: float = 5.0,

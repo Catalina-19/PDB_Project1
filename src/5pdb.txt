@@ -1,7 +1,7 @@
-PDB_ID	RES
-3boh	2.0
-1tp6	2.0
-1gkj	2.0
-1gk2	2.0
-1gk3	2.0
-5ltm	2.0
+PDB_ID
+3boh
+1tp6
+1gkj
+1gk2
+1gk3
+5ltm
