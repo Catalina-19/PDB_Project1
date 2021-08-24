@@ -1,7 +1,0 @@
-PDB_ID
-3boh
-1tp6
-1gkj
-1gk2
-1gk3
-5ltm
