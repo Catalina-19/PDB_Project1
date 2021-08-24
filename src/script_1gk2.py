@@ -253,45 +253,6 @@ class Analysis(object):
             with open("non_redundant_output.txt", 'a') as f:
                 f.write(i)
 
-    def replace_pdb_text(self):
-        output_file = open("non_redundant_output.txt")
-        with open("correct_non_redundant.txt", 'w') as f:
-            for line in output_file:
-                f.write(re.sub(r'(downloaded_pdbs.{4})(.{4})(.cif)', "%s" % (r'\2'), line).upper())
-
-    def get_pdb_list(self):
-        """
-        Get the list of structures with the name as pdb_id, not the file and path name
-        :return:
-        """
-        # pdb_id_list = list()
-        with open("correct_non_redundant.txt", 'r') as f:
-            for i in f:
-                line = i.split()
-                pdb_id = line[0][19:23]
-                self.pdb_id_list.append(pdb_id)
-            self.pdb_id_list = self.pdb_id_list[1:]
-
-    # def download_pdb_structures(self):
-    #     """
-    #     Download the pdb structure for a list of pdb_ids
-    #     :return:
-    #     """
-    #     # print(self.pdb_id_list)
-    #     with open("correct_non_redundant.txt", 'r') as f:
-    #         index = 0
-    #         for i in f:
-    #             line = i.split()
-    #             pdb_id = line[0]
-    #             if len(pdb_id) > 3:
-    #                 try:
-    #                     Download.get_pdb(self, pdb_id=pdb_id)
-    #                     # print(pdb_id)
-    #                     index += 1
-    #                 except:
-    #                     print("{} could not be downloaded".format(pdb_id))
-    #         print(index)
-
     def filter_surface_results(self):
         """
         Compute the neighbors for each motif, in order to know whether they are on the surface
@@ -679,13 +640,13 @@ if __name__ == "__main__":
     pdb_list = "pdb_list.log"
     analysis = Analysis()
     # analysis.detect_three_residue_tight_loop_serial(pdb_list)
-    # analysis.detect_three_residue_tight_loop_MPI(pdb_list)
+    analysis.detect_three_residue_tight_loop_MPI(pdb_list)
     # analysis.filtering_redundant_results()
     # analysis.replace_pdb_text()
     # analysis.download_pdb_structures()
     # analysis.filter_surface_results()
     # analysis.compare_phi_difference()
-    analysis.pca_analysis_first_part()
+    # analysis.pca_analysis_first_part()
     # analysis.pca_analysis_second_part()
     # analysis.calculate_rmsd()
     # analysis.calculate_rmsf()
